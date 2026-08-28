@@ -1,5 +1,5 @@
 # MediGuide AI
-
+deployment link : https://mediguideapp.streamlit.app/
 ## AI-Powered Medical Symptom Assessment and Patient Guidance Assistant
 
 MediGuide AI is an educational AI prototype built with **Python, Streamlit, LangChain, and OpenAI**.
