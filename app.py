@@ -1,3 +1,4 @@
+```python
 """
 MediGuide AI
 ============
@@ -48,6 +49,96 @@ st.set_page_config(
 
 
 # ============================================================
+# SESSION STATE
+# ============================================================
+
+if "openai_api_key" not in st.session_state:
+    st.session_state["openai_api_key"] = ""
+
+if "api_key_unlocked" not in st.session_state:
+    st.session_state["api_key_unlocked"] = False
+
+
+# ============================================================
+# API KEY GATE
+# ============================================================
+
+if not st.session_state["api_key_unlocked"]:
+
+    # Add some vertical space
+    st.markdown(
+        "<div style='height: 15vh;'></div>",
+        unsafe_allow_html=True,
+    )
+
+    # Center the entire API-key section
+    left, center, right = st.columns([1, 2, 1])
+
+    with center:
+
+        st.markdown(
+            """
+            <div style="text-align: center;">
+                <h1 style="font-size: 42px;">🩺 MediGuide AI</h1>
+
+                <p style="font-size: 20px;">
+                    AI-Powered Medical Symptom Assessment
+                </p>
+
+                <p style="color: gray; font-size: 16px;">
+                    Enter your OpenAI API key to access the application.
+                </p>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+
+        st.markdown("<br>", unsafe_allow_html=True)
+
+        api_key_input = st.text_input(
+            "OpenAI API Key",
+            type="password",
+            placeholder="sk-...",
+            label_visibility="collapsed",
+        )
+
+        if st.button(
+            "Continue to MediGuide AI",
+            type="primary",
+            use_container_width=True,
+        ):
+
+            cleaned_key = api_key_input.strip()
+
+            if not cleaned_key:
+                st.error("Please enter your OpenAI API key.")
+
+            else:
+                st.session_state["openai_api_key"] = cleaned_key
+                st.session_state["api_key_unlocked"] = True
+
+                st.rerun()
+
+        st.markdown(
+            """
+            <p style="
+                text-align: center;
+                color: gray;
+                font-size: 13px;
+                margin-top: 15px;
+            ">
+                Your API key is used for your requests during this session.
+            </p>
+            """,
+            unsafe_allow_html=True,
+        )
+
+    # IMPORTANT:
+    # Do not load the actual application until unlocked.
+    st.stop()
+
+
+# ============================================================
 # MEDICAL DISCLAIMER
 # ============================================================
 
@@ -70,12 +161,6 @@ seek emergency medical help immediately.
 # SIDEBAR
 # ============================================================
 
-if "openai_api_key" not in st.session_state:
-    st.session_state["openai_api_key"] = ""
-
-if "api_key_unlocked" not in st.session_state:
-    st.session_state["api_key_unlocked"] = False
-
 with st.sidebar:
 
     st.title("MediGuide AI")
@@ -87,36 +172,6 @@ with st.sidebar:
 
     st.divider()
 
-    if not st.session_state["api_key_unlocked"]:
-
-        st.subheader("API Access")
-
-        api_key_input = st.text_input(
-            "OpenAI API key",
-            type="password",
-            key="api_key_input",
-            placeholder="sk-...",
-            help="Enter your key first. The app stays locked until it is provided.",
-        )
-
-        if st.button(
-            "Unlock the app",
-            type="primary",
-            use_container_width=True,
-        ):
-            cleaned_key = api_key_input.strip()
-
-            if cleaned_key:
-                st.session_state["openai_api_key"] = cleaned_key
-                st.session_state["api_key_unlocked"] = True
-                st.rerun()
-            else:
-                st.warning("Please enter your OpenAI API key to continue.")
-
-        st.caption("The app is locked until a valid API key is entered.")
-
-        st.stop()
-
     # --------------------------------------------------------
     # Model configuration
     # --------------------------------------------------------
@@ -127,16 +182,7 @@ with st.sidebar:
         f"**Model:** `{DEFAULT_MODEL}`"
     )
 
-    openai_api_key = st.text_input(
-        "OpenAI API key",
-        type="password",
-        key="openai_api_key",
-        value=st.session_state["openai_api_key"],
-        placeholder="sk-...",
-        help="Your key is kept in this browser session and used only for your requests.",
-    )
-
-    st.session_state["openai_api_key"] = openai_api_key.strip()
+    st.caption("API key configured for this session.")
 
     # --------------------------------------------------------
     # Language
@@ -170,7 +216,6 @@ with st.sidebar:
         get_cache_description(cache_type)
     )
 
-    # Configure selected cache
     try:
         configure_cache(cache_type)
 
@@ -181,13 +226,18 @@ with st.sidebar:
 
     st.divider()
 
+    if st.button(
+        "Lock App",
+        use_container_width=True,
+    ):
+        st.session_state["openai_api_key"] = ""
+        st.session_state["api_key_unlocked"] = False
+        st.rerun()
+
+
 # ============================================================
 # MAIN AREA
 # ============================================================
-
-if not st.session_state["api_key_unlocked"]:
-    st.info("Enter your OpenAI API key in the sidebar to unlock the app.")
-    st.stop()
 
 st.title("MediGuide AI")
 
@@ -311,13 +361,15 @@ with st.form("medical_assessment_form"):
 if submitted:
 
     # --------------------------------------------------------
-    # Validate API key
+    # API key
     # --------------------------------------------------------
 
-    if not openai_api_key.strip():
+    openai_api_key = st.session_state["openai_api_key"].strip()
+
+    if not openai_api_key:
 
         st.warning(
-            "Please enter your OpenAI API key in the sidebar."
+            "Please enter your OpenAI API key."
         )
 
         st.stop()
@@ -357,9 +409,7 @@ if submitted:
         if selected_symptoms:
             selected_symptoms += ", "
 
-        selected_symptoms += (
-            additional_symptoms.strip()
-        )
+        selected_symptoms += additional_symptoms.strip()
 
     # --------------------------------------------------------
     # Show submitted information
@@ -371,25 +421,15 @@ if submitted:
         "View submitted patient information"
     ):
 
-        st.write(
-            f"**Age:** {age}"
-        )
+        st.write(f"**Age:** {age}")
 
-        st.write(
-            f"**Gender:** {gender}"
-        )
+        st.write(f"**Gender:** {gender}")
 
-        st.write(
-            f"**Symptoms:** {selected_symptoms}"
-        )
+        st.write(f"**Symptoms:** {selected_symptoms}")
 
-        st.write(
-            f"**Duration:** {duration}"
-        )
+        st.write(f"**Duration:** {duration}")
 
-        st.write(
-            f"**Severity:** {severity}/10"
-        )
+        st.write(f"**Severity:** {severity}/10")
 
         st.write(
             f"**Existing conditions:** "
@@ -417,7 +457,7 @@ if submitted:
         try:
 
             result = run_medical_assessment(
-                api_key=openai_api_key.strip(),
+                api_key=openai_api_key,
                 age=age,
                 gender=gender,
                 symptoms=selected_symptoms,
@@ -487,9 +527,7 @@ if submitted:
     # URGENCY
     # ========================================================
 
-    urgency = assessment[
-        "urgency_level"
-    ]
+    urgency = assessment["urgency_level"]
 
     st.subheader("Urgency Level")
 
@@ -685,7 +723,7 @@ if submitted:
 
         streamed_text = st.write_stream(
             stream_narrative(
-                api_key=openai_api_key.strip(),
+                api_key=openai_api_key,
                 age=age,
                 gender=gender,
                 symptoms=selected_symptoms,
@@ -725,4 +763,4 @@ if submitted:
         st.error(
             "EMERGENCY: Seek emergency medical help immediately."
         )
-
+```
