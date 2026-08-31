@@ -77,7 +77,7 @@ if not st.session_state["api_key_unlocked"]:
     with center:
 
         st.markdown(
-            """
+        
             <div style="text-align: center;">
                 <h1 style="font-size: 42px;">🩺 MediGuide AI</h1>
 
@@ -89,7 +89,7 @@ if not st.session_state["api_key_unlocked"]:
                     Enter your OpenAI API key to access the application.
                 </p>
             </div>
-            """,
+            ,
             unsafe_allow_html=True,
         )
 
