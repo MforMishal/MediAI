@@ -76,23 +76,6 @@ if not st.session_state["api_key_unlocked"]:
 
     with center:
 
-        st.markdown(
-        
-            <div style="text-align: center;">
-                <h1 style="font-size: 42px;">🩺 MediGuide AI</h1>
-
-                <p style="font-size: 20px;">
-                    AI-Powered Medical Symptom Assessment
-                </p>
-
-                <p style="color: gray; font-size: 16px;">
-                    Enter your OpenAI API key to access the application.
-                </p>
-            </div>
-            ,
-            unsafe_allow_html=True,
-        )
-
         st.markdown("<br>", unsafe_allow_html=True)
 
         api_key_input = st.text_input(
