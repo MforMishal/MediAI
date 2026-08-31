@@ -70,6 +70,12 @@ seek emergency medical help immediately.
 # SIDEBAR
 # ============================================================
 
+if "openai_api_key" not in st.session_state:
+    st.session_state["openai_api_key"] = ""
+
+if "api_key_unlocked" not in st.session_state:
+    st.session_state["api_key_unlocked"] = False
+
 with st.sidebar:
 
     st.title("MediGuide AI")
@@ -80,6 +86,36 @@ with st.sidebar:
     )
 
     st.divider()
+
+    if not st.session_state["api_key_unlocked"]:
+
+        st.subheader("API Access")
+
+        api_key_input = st.text_input(
+            "OpenAI API key",
+            type="password",
+            key="api_key_input",
+            placeholder="sk-...",
+            help="Enter your key first. The app stays locked until it is provided.",
+        )
+
+        if st.button(
+            "Unlock the app",
+            type="primary",
+            use_container_width=True,
+        ):
+            cleaned_key = api_key_input.strip()
+
+            if cleaned_key:
+                st.session_state["openai_api_key"] = cleaned_key
+                st.session_state["api_key_unlocked"] = True
+                st.rerun()
+            else:
+                st.warning("Please enter your OpenAI API key to continue.")
+
+        st.caption("The app is locked until a valid API key is entered.")
+
+        st.stop()
 
     # --------------------------------------------------------
     # Model configuration
@@ -95,9 +131,12 @@ with st.sidebar:
         "OpenAI API key",
         type="password",
         key="openai_api_key",
+        value=st.session_state["openai_api_key"],
         placeholder="sk-...",
         help="Your key is kept in this browser session and used only for your requests.",
     )
+
+    st.session_state["openai_api_key"] = openai_api_key.strip()
 
     # --------------------------------------------------------
     # Language
@@ -145,6 +184,10 @@ with st.sidebar:
 # ============================================================
 # MAIN AREA
 # ============================================================
+
+if not st.session_state["api_key_unlocked"]:
+    st.info("Enter your OpenAI API key in the sidebar to unlock the app.")
+    st.stop()
 
 st.title("MediGuide AI")
 
