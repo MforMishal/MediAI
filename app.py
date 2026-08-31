@@ -1,4 +1,4 @@
-```python
+
 """
 MediGuide AI
 ============
@@ -763,4 +763,3 @@ if submitted:
         st.error(
             "EMERGENCY: Seek emergency medical help immediately."
         )
-```
